@@ -206,7 +206,7 @@ size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp){
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
-  int _fd = fp->fd; // file descriptor 
+  int _fd = fp->fd; // file descriptor
   // check for write permissions
   if((fp->flag & _WRITE) == 0){
     // fp->flag = _ERR;
@@ -223,4 +223,9 @@ size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
   }
 
   return (numwritten/size);
+}
+
+int main()
+{
+  return 0;
 }

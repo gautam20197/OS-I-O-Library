@@ -16,7 +16,7 @@ typedef struct _iobuf // this statement defines _iobuf first and then gives it
   int flag; // mode of file access
   int fd; // file descriptor
 } FILE;
-extern FILE _iob[OPEN_MAX];
+FILE _iob[OPEN_MAX];
 // _iob is a array of FILE with length OPEN_MAX and it can be accessed in any
 // .c file which import it.
 // extern is a keyword that extends the scope of the variable to global.
