@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <stdlib.h>
+// #include <stdio.h>
 
 #define PERMS 0666 // RW for owner, group, others
 
@@ -227,5 +228,41 @@ size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
 
 int main()
 {
+  FILE *fp;
+  fp = fopen("words.txt","r");
+  int a = getc(fp);
+  printf("%c\n",a);
+  fclose(fp);
+  fp = fopen("test1.txt","r");
+  int b = getc(fp);
+  printf("%c\n", b);
+  fclose(fp);
+  fp = fopen("test1.txt","r");
+  int c,c1;
+  FILE* f3 = fopen("putcTest.txt","w");
+  for(int i=0;i<8;i++)
+  {
+    c = getc(fp);
+    printf("%c\n",c);
+    printf("***********");
+    c1 = putc(c,f3);
+    printf("%c\n",c);
+  }
+  // int c = getc(fp);
+  // printf("%c\n", c);
+  // int d = getc(fp);
+  // printf("%c\n", d);
+  fclose(fp);
+  fclose(f3);
+  fp = fopen("words.txt","r");
+  char* buf = malloc(sizeof(char)*150);
+  int num = fread(buf, sizeof(char), 150, fp);
+  FILE* f2;
+  f2 = fopen("created.txt","w");
+  int wnum = fwrite(buf, sizeof(char),150, f2);
+  printf("%d\n", num);
+  printf("%d\n", wnum);
+  fclose(f2);
+  fclose(fp);
   return 0;
 }
