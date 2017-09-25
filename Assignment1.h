@@ -8,16 +8,16 @@
 #define OPEN_MAX 20 // max files open at once
 
 typedef struct _iobuf // this statement defines _iobuf first and then gives it
-// an alias of FILE. Now variables of type _iobuf can be simply defined by FILE
+// an alias of MyFILE. Now variables of type _iobuf can be simply defined by MyFILE
 {
   int cnt; // characters left in the buffer
   char *ptr; // next character position
   char *base; // location of buffer
   int flag; // mode of file access
   int fd; // file descriptor
-} FILE;
-FILE _iob[OPEN_MAX];
-// _iob is a array of FILE with length OPEN_MAX and it can be accessed in any
+} MyFILE;
+MyFILE _iob[OPEN_MAX];
+// _iob is a array of MyFILE with length OPEN_MAX and it can be accessed in any
 // .c file which import it.
 // extern is a keyword that extends the scope of the variable to global.
 // It is only a declaration not a definition i.e it does not allocate memory
@@ -35,22 +35,22 @@ enum _flags // enum is used to define new enumeration data types
   _ERR = 020, // error occurred on this file
 };
 
-int _fillbuf(FILE *);
-int _flushbuf(int, FILE *);
+int _fillbuf(MyFILE *);
+int _flushbuf(int, MyFILE *);
 
 // The following are macro definitions
 #define feof(p) (((p)->flag & _EOF) != 0)
 #define ferror(p) (((p)->flag & _ERR) != 0)
 #define fileno(p) ((p)->fd)
-#define getc(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : _fillbuf(p))
-#define putc(x,p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (x) : _flushbuf((x),p))
-#define getchar() getc(stdin)
-#define putchar(x) putc((x),stdout)
+#define Mygetc(p) (--(p)->cnt >= 0 ? (unsigned char) *(p)->ptr++ : _fillbuf(p))
+#define Myputc(x,p) (--(p)->cnt >= 0 ? *(p)->ptr++ = (x) : _flushbuf((x),p))
+#define Mygetchar() Mygetc(stdin)
+#define Myputchar(x) Myputc((x),stdout)
 
-FILE *fopen(char *name, char *mode);
-int fseek(FILE *fp, long offset, int origin);
-int fflush(FILE *fp);
-int fclose(FILE *fp);
+MyFILE *myfopen(char *name, char *mode);
+int Myfseek(MyFILE *fp, long offset, int origin);
+int fflush(MyFILE *fp);
+int Myfclose(MyFILE *fp);
 
-size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp);
-size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp);
+size_t Myfread(void *ptr, size_t size, size_t nobj, MyFILE *fp);
+size_t Myfwrite(const void *ptr, size_t size, size_t nobj, MyFILE *fp);

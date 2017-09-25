@@ -6,11 +6,11 @@
 
 #define PERMS 0666 // RW for owner, group, others
 
-// fopen: open file, return file ptr
-FILE *fopen(char *name, char *mode)
+// myfopen: open file, return file ptr
+MyFILE *myfopen(char *name, char *mode)
 {
   int fd; // file descriptor
-  FILE *fp;
+  MyFILE *fp;
 
   // Check if the correct mode is given or not
   if(*mode != 'r' && *mode != 'w' && *mode != 'a')
@@ -52,7 +52,7 @@ FILE *fopen(char *name, char *mode)
 }
 
 // _fillbuf(): Allocate and fill an input buffer
-int _fillbuf(FILE *fp)
+int _fillbuf(MyFILE *fp)
 {
   int bufsize = 0; // Size of buffer allocation
 
@@ -88,7 +88,7 @@ int _fillbuf(FILE *fp)
   return (unsigned char) *fp->ptr++;
 }
 
-int _flushbuf(int x, FILE *fp)
+int _flushbuf(int x, MyFILE *fp)
 {
   unsigned nc; // Number of characters to flush
   int bufsize; // Size of buffer Allocation
@@ -128,7 +128,7 @@ int _flushbuf(int x, FILE *fp)
     return x;
 }
 
-int fflush(FILE *fp) {
+int fflush(MyFILE *fp) {
   int rc = 0;
   // Make sure we are being asked to flush a valid file pointer
   if (fp < _iob || fp >= _iob + OPEN_MAX)
@@ -140,7 +140,7 @@ int fflush(FILE *fp) {
   return rc;
 }
 
-int fclose(FILE *fp) {
+int Myfclose(MyFILE *fp) {
   int rc;
   if ((rc = fflush(fp)) != EOF) {
     free(fp->base); // free function frees up the memory space pointed to by a ptr
@@ -152,7 +152,7 @@ int fclose(FILE *fp) {
   return rc;
 }
 
-int fseek(FILE *fp, long offset, int origin) {
+int Myfseek(MyFILE *fp, long offset, int origin) {
   unsigned nc;  // Number of characters to flush
   long rc = 0;  // Return code
   // Take action based upon the current access mode (read or write)
@@ -186,9 +186,9 @@ int fseek(FILE *fp, long offset, int origin) {
 
 
 
-// fread - read into the *ptr memory array, nobj objects of type whose sizeOf is size bytes
-// Read from the file associated with FILE *fp
-size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp){
+// Myfread - read into the *ptr memory array, nobj objects of type whose sizeOf is size bytes
+// Read from the file associated with MyFILE *fp
+size_t Myfread(void *ptr, size_t size, size_t nobj, MyFILE *fp){
   int _fd = fp->fd;
   // if the file doesn't have read access --> set error
   if((fp->flag & _READ) == 0){
@@ -206,7 +206,7 @@ size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp){
   return bytesreq==bytesread? nobj: (bytesread/size);
 }
 
-size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
+size_t Myfwrite(const void *ptr, size_t size, size_t nobj, MyFILE *fp){
   int _fd = fp->fd; // file descriptor
   // check for write permissions
   if((fp->flag & _WRITE) == 0){
@@ -228,41 +228,41 @@ size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
 
 int main()
 {
-  FILE *fp;
-  fp = fopen("words.txt","r");
-  int a = getc(fp);
+  MyFILE *fp;
+  fp = myfopen("words.txt","r");
+  int a = Mygetc(fp);
   printf("%c\n",a);
-  fclose(fp);
-  fp = fopen("test1.txt","r");
-  int b = getc(fp);
+  Myfclose(fp);
+  fp = myfopen("test1.txt","r");
+  int b = Mygetc(fp);
   printf("%c\n", b);
-  fclose(fp);
-  fp = fopen("test1.txt","r");
+  Myfclose(fp);
+  fp = myfopen("test1.txt","r");
   int c,c1;
-  FILE* f3 = fopen("putcTest.txt","w");
+  MyFILE* f3 = myfopen("MyputcTest.txt","w");
   for(int i=0;i<8;i++)
   {
-    c = getc(fp);
+    c = Mygetc(fp);
+    printf("***********\n");
     printf("%c\n",c);
-    printf("***********");
-    c1 = putc(c,f3);
+    c1 = Myputc(c,f3);
     printf("%c\n",c);
   }
-  // int c = getc(fp);
+  // int c = Mygetc(fp);
   // printf("%c\n", c);
-  // int d = getc(fp);
+  // int d = Mygetc(fp);
   // printf("%c\n", d);
-  fclose(fp);
-  fclose(f3);
-  fp = fopen("words.txt","r");
-  char* buf = malloc(sizeof(char)*150);
-  int num = fread(buf, sizeof(char), 150, fp);
-  FILE* f2;
-  f2 = fopen("created.txt","w");
-  int wnum = fwrite(buf, sizeof(char),150, f2);
+  Myfclose(fp);
+  Myfclose(f3);
+  fp = myfopen("words.txt","r");
+  char* buf = malloc(sizeof(char)*15);
+  int num = Myfread(buf, sizeof(char), 15, fp);
+  MyFILE* f2;
+  f2 = myfopen("created.txt","w");
+  int wnum = Myfwrite(buf, sizeof(char),15, f2);
   printf("%d\n", num);
   printf("%d\n", wnum);
-  fclose(f2);
-  fclose(fp);
+  Myfclose(f2);
+  Myfclose(fp);
   return 0;
 }
