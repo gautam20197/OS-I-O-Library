@@ -182,3 +182,45 @@ int fseek(FILE *fp, long offset, int origin) {
     // return appropriate return code
     return (rc == -1) ? -1 : 0;
 }
+
+
+
+// fread - read into the *ptr memory array, nobj objects of type whose sizeOf is size bytes
+// Read from the file associated with FILE *fp
+size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp){
+  int _fd = fp->fd;
+  // if the file doesn't have read access --> set error
+  if((fp->flag & _READ) == 0){
+    fp->flag = _ERR;
+    return 0;
+  }
+  // number of bytes requested
+  int bytesreq = size*nobj;
+  if(bytesreq == 0)
+    return 0;
+
+  // read into the ptr buffer
+  size_t bytesread = read(_fd, (char *) ptr, bytesreq);
+
+  return bytesreq==bytesread? nobj: (bytesread/size);
+}
+
+size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp){
+  int _fd = fp->fd; // file descriptor 
+  // check for write permissions
+  if((fp->flag & _WRITE) == 0){
+    // fp->flag = _ERR;
+    return 0;
+  }
+
+  // get the number of bytes written
+  int numwritten = write(_fd, (char *) ptr, size*nobj);
+
+  // if write system call had an error in execution -- there was an error
+  if(numwritten<0){
+    // fp->flag = _ERR;
+    return 0;
+  }
+
+  return (numwritten/size);
+}
