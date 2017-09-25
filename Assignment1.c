@@ -49,3 +49,136 @@ FILE *fopen(char *name, char *mode)
   fp->flag = (*mode == 'r') ? _READ : _WRITE;
   return fp;
 }
+
+// _fillbuf(): Allocate and fill an input buffer
+int _fillbuf(FILE *fp)
+{
+  int bufsize = 0; // Size of buffer allocation
+
+  // Make sure we are in read mode and neither EOF not ERR indicators have been set.
+  if((fp->flag & (_READ | _EOF | _ERR )) != _READ)
+    return EOF;
+
+  // Calculate buffer size and attempt to allocate it.
+  bufsize = (fp->flag & _UNBUF) ? 1 : BUFSIZ;
+  // This is 1 because we dont want to use a buffer if the _UNBUF flag is on
+  if(fp->base == NULL)
+    if((fp->base = (char *)malloc(bufsize)) == NULL)
+      return EOF;
+
+  // Fill the buffer as much as we can
+  fp->ptr = fp->base;
+  fp->cnt = read(fp->fd, fp->ptr, bufsize);
+  // read is a system call. The second argument is the character array in your
+  // program where the data to is to go to. Each call returns a count of the number
+  // of bytes transferred. A value of zero implies EOF and -1 implies an error.
+
+  // Handle if either an end of file or error condition occurred
+  if(--fp->cnt < 0)
+  {
+    if(fp->cnt == -1)
+      fp->flag |= _EOF;
+    else
+      fp->flag |= _ERR;
+    fp->cnt = 0;
+    return EOF;
+  }
+
+  return (unsigned char) *fp->ptr++;
+}
+
+int _flushbuf(int x, FILE *fp)
+{
+  unsigned nc; // Number of characters to flush
+  int bufsize; // Size of buffer Allocation
+
+  // Confirm we were passed a valid file pointer, that the ERR indicator is not set,
+  // and that we are in write mode.  If not the case, politely return EOF condition
+  if (fp < _iob || fp >= _iob + OPEN_MAX)
+    return EOF;
+  if ((fp->flag & (_WRITE | _ERR)) != _WRITE)
+    return EOF;
+
+  // Set buffer size
+  bufsize = (fp->flag & _UNBUF) ? 1 : BUFSIZ;
+
+  // Check to see if a buffer has been allocated and act accordingly
+    if (fp->base == NULL) {
+    // No buffer has been allocated yet, so attempt to allocate one. If we
+    // cannot, set ERR indicator and return EOF condition; otherwise
+      if ((fp->base = (char *)malloc(bufsize)) == NULL) {
+        fp->flag |= _ERR;
+        return EOF;
+      }
+    } else {
+      // A buffer has been allocated so go aehad and write it out and
+      // deal with any consequences
+      nc = fp->ptr - fp->base;
+      if (write(fp->fd, fp->base, nc) != nc) {
+        fp->flag |= _ERR;
+        return EOF;
+      }
+    }
+    // Maintain the file pointer and save the character
+    fp->ptr = fp->base;
+    fp->cnt = bufsize - 1;
+    *fp->ptr++ = (char) x;
+
+    return x;
+}
+
+int fflush(FILE *fp) {
+  int rc = 0;
+  // Make sure we are being asked to flush a valid file pointer
+  if (fp < _iob || fp >= _iob + OPEN_MAX)
+    return EOF;
+  if (fp->flag & _WRITE)
+    rc = _flushbuf(0, fp);
+  fp->ptr = fp->base;
+  fp->cnt = (fp->flag & _UNBUF) ? 1 : BUFSIZ;
+  return rc;
+}
+
+int fclose(FILE *fp) {
+  int rc;
+  if ((rc = fflush(fp)) != EOF) {
+    free(fp->base); // free function frees up the memory space pointed to by a ptr
+    fp->ptr = NULL;
+    fp->cnt = 0;
+    fp->base = NULL;
+    fp->flag &= ~(_READ | _WRITE);
+  }
+  return rc;
+}
+
+int fseek(FILE *fp, long offset, int origin) {
+  unsigned nc;  // Number of characters to flush
+  long rc = 0;  // Return code
+  // Take action based upon the current access mode (read or write)
+  // of the file
+  if (fp->flag & _READ) {
+  // We're in a read access mode
+  // If origin is set to '1' we are reading from the current position
+  // but need to take the characters in the buffer into account, seek to
+  // our adjusted position, and discard any buffered characters.  Note: if
+  // origin is set to '0' (beginning of file) or '2' (end of file) then
+  // the current buffer contents do not need to be accounted for.
+    if (origin == 1)
+      offset -= fp->cnt;
+    rc = lseek(fp->fd, offset, origin);
+    fp->cnt = 0;
+
+    } else if (fp->flag & _WRITE) {
+    // We're in a write access mode (includes append) so all nwee need to do is
+    // write out any buffered characters then, if successful, seek to our new
+    // position.  Origin does not matter in any case.
+      nc = (fp->ptr - fp->base);
+      if (nc > 0)
+        if (write(fp->fd, fp->base, nc) != nc)
+          rc = -1;
+      if (rc != -1)
+        rc = lseek(fp->fd, offset, origin);
+    }
+    // return appropriate return code
+    return (rc == -1) ? -1 : 0;
+}

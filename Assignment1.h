@@ -3,7 +3,6 @@
 #include <stdlib.h> // Contains header for Memory Allocation(malloc) functions
 #include <unistd.h> // Equivalent to "syscalls.h"
 
-#define NULL 0
 #define EOF (-1)
 #define BUFSIZ 1024
 #define OPEN_MAX 20 // max files open at once
@@ -11,7 +10,7 @@
 typedef struct _iobuf // this statement defines _iobuf first and then gives it
 // an alias of FILE. Now variables of type _iobuf can be simply defined by FILE
 {
-  int cnt; // characters left
+  int cnt; // characters left in the buffer
   char *ptr; // next character position
   char *base; // location of buffer
   int flag; // mode of file access
@@ -49,3 +48,6 @@ int _flushbuf(int, FILE *);
 #define putchar(x) putc((x),stdout)
 
 FILE *fopen(char *name, char *mode);
+int fseek(FILE *fp, long offset, int origin);
+int fflush(FILE *fp);
+int fclose(FILE *fp);
