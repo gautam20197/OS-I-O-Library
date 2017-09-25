@@ -51,3 +51,6 @@ FILE *fopen(char *name, char *mode);
 int fseek(FILE *fp, long offset, int origin);
 int fflush(FILE *fp);
 int fclose(FILE *fp);
+
+size_t fread(void *ptr, size_t size, size_t nobj, FILE *fp);
+size_t fwrite(const void *ptr, size_t size, size_t nobj, FILE *fp);
