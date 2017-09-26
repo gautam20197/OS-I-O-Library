@@ -229,6 +229,7 @@ size_t Myfwrite(const void *ptr, size_t size, size_t nobj, MyFILE *fp){
 int main()
 {
   MyFILE *fp;
+  // Testing for myfopen and Mygetc
   fp = myfopen("words.txt","r");
   int a = Mygetc(fp);
   printf("%c\n",a);
@@ -240,6 +241,7 @@ int main()
   fp = myfopen("test1.txt","r");
   int c,c1;
   MyFILE* f3 = myfopen("MyputcTest.txt","w");
+  // Testing for multiple Myputc and Mygetc
   for(int i=0;i<8;i++)
   {
     c = Mygetc(fp);
@@ -255,6 +257,7 @@ int main()
   Myfclose(fp);
   Myfclose(f3);
   fp = myfopen("words.txt","r");
+  // Testing for Myfread and Myfwrite
   char* buf = malloc(sizeof(char)*15);
   int num = Myfread(buf, sizeof(char), 15, fp);
   MyFILE* f2;
@@ -263,11 +266,33 @@ int main()
   printf("%d\n", num);
   printf("%d\n", wnum);
   Myfclose(f2);
+  // Testing for append
   MyFILE* f4 = myfopen("created.txt","a");
   int wnum2 = Myfwrite(buf, sizeof(char),15, f2);
   printf("%d\n", wnum2);
   Myfclose(f4);
   Myfclose(fp);
-
+  // Testing for lseek
+  MyFILE* f5 = myfopen("test2.txt","r");
+  MyFILE* f6 = myfopen("fseekTest.txt","w");
+  MyFILE* f7 = myfopen("fseekTest2.txt","w");
+  if(Myfseek(f5,5,0)>=0)
+  {
+    char* buf2 = malloc(sizeof(char)*15);
+    int l = Myfread(buf2, sizeof(char), 15, f5);
+    int l2 = Myfwrite(buf2, sizeof(char),15, f6);
+    Myfseek(f5,1,1);
+    char* buf3 = malloc(sizeof(char)*15);
+    int ll = Myfread(buf3, sizeof(char), 15, f5);
+    int ll2 = Myfwrite(buf3, sizeof(char),15, f7);
+    Myfseek(f7,0L,2);
+    int ll4 = Myfwrite(buf3, sizeof(char),15, f7);
+    // printf("%d\n", l);
+  }
+  else
+    printf("-1");
+  Myfclose(f5);
+  Myfclose(f6);
+  Myfclose(f7);
   return 0;
 }
