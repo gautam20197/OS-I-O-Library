@@ -263,6 +263,11 @@ int main()
   printf("%d\n", num);
   printf("%d\n", wnum);
   Myfclose(f2);
+  MyFILE* f4 = myfopen("created.txt","a");
+  int wnum2 = Myfwrite(buf, sizeof(char),15, f2);
+  printf("%d\n", wnum2);
+  Myfclose(f4);
   Myfclose(fp);
+
   return 0;
 }
